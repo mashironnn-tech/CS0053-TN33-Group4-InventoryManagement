@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 
@@ -93,15 +94,23 @@ bool addExpense(vector<Expense>& expenses) {
 
 // MEMBER 2: View and display expenses.
 void viewExpenses(const vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Show an empty-list message, or call displayExpense() for each record.
-    cout << "Member 2: View expenses is not implemented yet.\n";
+    if (expenses.empty()) {
+        cout << "\nNo expenses found.\n";
+        return;
+    }
+
+    cout << "\n--- All Expense Records ---\n";
+    for (const auto& expense : expenses) {
+        displayExpense(expense);
+    }
 }
 
 void displayExpense(const Expense& expense) {
-    (void)expense;
-    // TODO: Print all fields. Show the PHP amount with two decimal places.
-    cout << "Member 2: Display expense is not implemented yet.\n";
+    cout << "ID: " << expense.id << " | "
+         << "Date: " << expense.date << " | "
+         << "Category: " << expense.category << " | "
+         << "Amount: PHP " << fixed << setprecision(2) << expense.amount << " | "
+         << "Description: " << expense.description << "\n";
 }
 
 // MEMBER 3: Search, storage, and input validation.

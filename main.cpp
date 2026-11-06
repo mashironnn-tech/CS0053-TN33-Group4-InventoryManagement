@@ -245,17 +245,71 @@ Expense readExpenseDetails() {
 
 // MEMBER 4: Update and later delete expenses.
 bool updateExpense(vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Find by ID, read valid details, and edit the record. Keep its ID.
-    // Return true only when a record changes. Handle missing IDs and empty lists.
-    cout << "Member 4: Update expense is not implemented yet.\n";
+    if (expenses.empty()) {
+        cout << "\nNo expenses available to update.\n";
+        return false;
+    }
+
+    cout << "Enter the ID of the expense to update: ";
+    int targetId;
+    if (!(cin >> targetId)) {
+        cin.clear();
+        cin.ignore(10000, '\n'); // Clear invalid input
+        cout << "Invalid ID format.\n";
+        return false;
+    }
+    cin.ignore(10000, '\n'); // Clear the newline character from the buffer
+
+    for (auto& expense : expenses) {
+        if (expense.id == targetId) {
+            cout << "Found expense ID " << targetId << ". Enter new details:\n";
+            
+            // Reuse Member 3's function to get validated input
+            Expense updatedData = readExpenseDetails();
+            
+            // Basic check to see if readExpenseDetails was cancelled/failed
+            if (updatedData.date.empty() || updatedData.category.empty()) { 
+                cout << "Update cancelled: valid details are required.\n";
+                return false;
+            }
+
+            // Keep the original ID, apply the new details
+            updatedData.id = expense.id;
+            expense = updatedData;
+            
+            cout << "Expense updated successfully.\n";
+            return true;
+        }
+    }
+
+    cout << "Update failed: Expense with ID " << targetId << " not found.\n";
     return false;
 }
 
 bool deleteExpense(vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO LATER: Find by ID, confirm, then remove. Return true only after deletion.
-    // This is the fifth feature required before submission.
-    cout << "Member 4: Delete expense is not implemented yet.\n";
+    if (expenses.empty()) {
+        cout << "\nNo expenses available to delete.\n";
+        return false;
+    }
+
+    cout << "Enter the ID of the expense to delete: ";
+    int targetId;
+    if (!(cin >> targetId)) {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Invalid ID format.\n";
+        return false;
+    }
+    cin.ignore(10000, '\n');
+
+    for (auto it = expenses.begin(); it != expenses.end(); ++it) {
+        if (it->id == targetId) {
+            expenses.erase(it);
+            cout << "Expense ID " << targetId << " deleted successfully.\n";
+            return true;
+        }
+    }
+
+    cout << "Delete failed: Expense with ID " << targetId << " not found.\n";
     return false;
 }

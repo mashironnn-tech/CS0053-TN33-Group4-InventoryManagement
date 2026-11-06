@@ -9,6 +9,12 @@
             }
         }
     }
+#include <iostream>
+#include <string>
+#include <vector>
+#include <iomanip>
+
+using namespace std;
 
     ofstream file("expenses.txt", ios::trunc);
     if (!file) {
@@ -82,6 +88,38 @@ Expense readExpenseDetails() {
         }
         cout << "Description cannot be empty.\n";
     }
+    return choice;
+}
+
+// MEMBER 1: Add expense.
+bool addExpense(vector<Expense>& expenses) {
+    (void)expenses;
+    // TODO: Call readExpenseDetails(), assign a unique ID, and add to the list.
+    // Return true only after adding an expense.
+    cout << "Member 1: Add expense is not implemented yet.\n";
+    return false;
+}
+
+// MEMBER 2: View and display expenses.
+void viewExpenses(const vector<Expense>& expenses) {
+    if (expenses.empty()) {
+        cout << "\nNo expenses found.\n";
+        return;
+    }
+
+    cout << "\n--- All Expense Records ---\n";
+    for (const auto& expense : expenses) {
+        displayExpense(expense);
+    }
+}
+
+void displayExpense(const Expense& expense) {
+    cout << "ID: " << expense.id << " | "
+         << "Date: " << expense.date << " | "
+         << "Category: " << expense.category << " | "
+         << "Amount: PHP " << fixed << setprecision(2) << expense.amount << " | "
+         << "Description: " << expense.description << "\n";
+}
 
     return expense;
 }

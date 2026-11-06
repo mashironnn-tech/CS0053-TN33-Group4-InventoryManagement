@@ -242,3 +242,20 @@ Expense readExpenseDetails() {
     Expense expense;
     return expense;
 }
+
+// MEMBER 4: Update and later delete expenses.
+bool updateExpense(vector<Expense>& expenses) {
+    (void)expenses;
+    // TODO: Find by ID, read valid details, and edit the record. Keep its ID.
+    // Return true only when a record changes. Handle missing IDs and empty lists.
+    cout << "Member 4: Update expense is not implemented yet.\n";
+    return false;
+}
+
+bool deleteExpense(vector<Expense>& expenses) {
+    (void)expenses;
+    // TODO LATER: Find by ID, confirm, then remove. Return true only after deletion.
+    // This is the fifth feature required before submission.
+    cout << "Member 4: Delete expense is not implemented yet.\n";
+    return false;
+}

@@ -154,24 +154,63 @@ string showMenu() {
 
 // MEMBER 1: Add expense.
 bool addExpense(vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Call readExpenseDetails(), assign a unique ID, and add to the list.
-    // Return true only after adding an expense.
-    cout << "Member 1: Add expense is not implemented yet.\n";
-    return false;
+    int nextId = 1;
+
+    // Find an unused ID without assuming the list is sorted.
+    for (const Expense& existing : expenses) {
+        if (existing.id == numeric_limits<int>::max()) {
+            cout << "Cannot add an expense: the ID limit was reached.\n";
+            return false;
+        }
+
+        if (existing.id >= nextId) {
+            nextId = existing.id + 1;
+        }
+    }
+
+    Expense expense = readExpenseDetails();
+
+    if (!cin) {
+        cout << "Adding expense cancelled.\n";
+        return false;
+    }
+
+    // Reject cancellation or an incomplete returned record.
+    if (expense.date.empty() ||
+        expense.category.empty() ||
+        expense.description.empty() ||
+        !isfinite(expense.amount) ||
+        expense.amount <= 0.0) {
+        cout << "Expense was not added: valid details are required.\n";
+        return false;
+    }
+
+    expense.id = nextId;
+    expenses.push_back(expense);
+
+    cout << "Expense added successfully. ID: " << expense.id << "\n";
+    return true;
 }
 
 // MEMBER 2: View and display expenses.
 void viewExpenses(const vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Show an empty-list message, or call displayExpense() for each record.
-    cout << "Member 2: View expenses is not implemented yet.\n";
+    if (expenses.empty()) {
+        cout << "\nNo expenses found.\n";
+        return;
+    }
+
+    cout << "\n--- All Expense Records ---\n";
+    for (const auto& expense : expenses) {
+        displayExpense(expense);
+    }
 }
 
 void displayExpense(const Expense& expense) {
-    (void)expense;
-    // TODO: Print all fields. Show the PHP amount with two decimal places.
-    cout << "Member 2: Display expense is not implemented yet.\n";
+    cout << "ID: " << expense.id << " | "
+         << "Date: " << expense.date << " | "
+         << "Category: " << expense.category << " | "
+         << "Amount: PHP " << fixed << setprecision(2) << expense.amount << " | "
+         << "Description: " << expense.description << "\n";
 }
 
 // MEMBER 3: Search, storage, and input validation.

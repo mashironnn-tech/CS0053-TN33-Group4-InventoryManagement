@@ -1,22 +1,20 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <limits>
+#include <cmath>
+#include <cctype>
+#include <filesystem>
+#include <cstdio>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
-        if (!member3::validRecord(expenses[i])) {
-            cerr << "Could not save: an expense is invalid.\n";
-            return false;
-        }
-        for (size_t j = 0; j < i; ++j) {
-            if (expenses[i].id == expenses[j].id) {
-                cerr << "Could not save: an expense has a duplicate ID.\n";
-                return false;
-            }
-        }
-    }
 
-// STARTER: The menu works. Replace TODO sections with your team's code.
-// (void) marks unused inputs in placeholders. Remove it when you use the input.
 struct Expense {
     int id = 0;
     string date;
@@ -24,20 +22,7 @@ struct Expense {
     double amount = 0.0;
     string description;
 };
-    ofstream file("expenses.txt", ios::trunc);
-    if (!file) {
-        cerr << "Could not open expenses.txt for writing.\n";
-        return false;
-    }
-    file << setprecision(17);
-    for (const Expense& expense : expenses) {
-        file << expense.id << '\t' << quoted(expense.date) << '\t'
-             << quoted(expense.category) << '\t' << expense.amount << '\t'
-             << quoted(expense.description) << '\n';
-    }
 
-// Function declarations: agree as a team before changing these.
-// & shares the original list; const means the function cannot change it.
 string showMenu();
 bool addExpense(vector<Expense>& expenses);                    // Member 1
 void viewExpenses(const vector<Expense>& expenses);            // Member 2
@@ -48,107 +33,35 @@ bool saveExpenses(const vector<Expense>& expenses);            // Member 3
 Expense readExpenseDetails();                                 // Member 3
 bool updateExpense(vector<Expense>& expenses);                 // Member 4
 bool deleteExpense(vector<Expense>& expenses);                 // Member 4
-    file.close();
-    if (file.fail()) {
-        cerr << "Could not finish writing expenses.txt.\n";
-        return false;
-    }
-    return true;
-}
 
 // MEMBER 1: Main program and menu.
 int main() {
     vector<Expense> expenses;
     loadExpenses(expenses);
-Expense readExpenseDetails() {
-    Expense expense;
-    string input;
-
     while (true) {
         string choice = showMenu();
         bool recordsChanged = false;
-        if (!member3::readLine("Date (YYYY-MM-DD): ", input)) {
-            return Expense{};
-        }
-        if (member3::validDate(input)) {
-            expense.date = input;
-            break;
-        }
-        cout << "Enter a real calendar date in YYYY-MM-DD format.\n";
-    }
-
         if (choice == "0") {
             cout << "Goodbye!\n";
-    while (true) {
-        if (!member3::readLine("Category: ", input)) {
-            return Expense{};
-        }
-        if (member3::validText(input)) {
-            expense.category = input;
             break;
-        } else if (choice == "1") {
-            recordsChanged = addExpense(expenses);
-        } else if (choice == "2") {
-            viewExpenses(expenses);
-        } else if (choice == "3") {
-            searchExpenses(expenses);
-        } else if (choice == "4") {
-            recordsChanged = updateExpense(expenses);
-        } else if (choice == "5") {
-            recordsChanged = deleteExpense(expenses);
-        } else {
-            cout << "Invalid choice. Enter 0 to 5.\n";
-        }
-        cout << "Category cannot be empty.\n";
+        } else if (choice == "1") recordsChanged = addExpense(expenses);
+        else if (choice == "2") viewExpenses(expenses);
+        else if (choice == "3") searchExpenses(expenses);
+        else if (choice == "4") recordsChanged = updateExpense(expenses);
+        else if (choice == "5") recordsChanged = deleteExpense(expenses);
+        else cout << "Invalid choice. Enter 0 to 5.\n";
+        if (recordsChanged && !saveExpenses(expenses))
+            cout << "Could not save. Changes are only in memory.\n";
     }
-
-        // Save only after an expense was added, updated, or deleted.
-        if (recordsChanged) {
-            bool saved = saveExpenses(expenses);
-            if (!saved) {
-                cout << "Could not save. Changes are only in memory.\n";
-    while (true) {
-        if (!member3::readLine("Amount (PHP): ", input)) {
-            return Expense{};
-        }
-        istringstream amountInput(input);
-        double amount = 0.0;
-        if (amountInput >> amount) {
-            amountInput >> ws;
-            if (amountInput.eof() && isfinite(amount) && amount > 0.0) {
-                expense.amount = amount;
-                break;
-            }
-        }
-        cout << "Enter a positive amount using a decimal point, such as 125.50.\n";
-    }
-
     return 0;
 }
 
 string showMenu() {
-    cout << "\n=== Personal Expense Tracker ===\n";
-    cout << "1. Add expense\n";
-    cout << "2. View expenses\n";
-    cout << "3. Search expenses\n";
-    cout << "4. Update expense\n";
-    cout << "5. Delete expense (later)\n";
-    cout << "0. Exit\n";
-    cout << "Choose an option: ";
-
+    cout << "\n=== Personal Expense Tracker ===\n"
+         << "1. Add expense\n2. View expenses\n3. Search expenses\n"
+         << "4. Update expense\n5. Delete expense\n0. Exit\nChoose an option: ";
     string choice;
-    if (!getline(cin, choice)) {
-        return "0"; // Exit if input ends.
-    while (true) {
-        if (!member3::readLine("Description: ", input)) {
-            return Expense{};
-        }
-        if (member3::validText(input)) {
-            expense.description = input;
-            break;
-        }
-        cout << "Description cannot be empty.\n";
-    }
+    if (!getline(cin, choice)) return "0";
     return choice;
 }
 
@@ -214,32 +127,152 @@ void displayExpense(const Expense& expense) {
 }
 
 // MEMBER 3: Search, storage, and input validation.
-void searchExpenses(const vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Ask for a category. Display matching records or a no-results message.
-    cout << "Member 3: Search expenses is not implemented yet.\n";
+bool validText(const string& text) {
+    return text.find_first_not_of(" \t\r\n") != string::npos;
 }
 
+bool validDate(const string& date) {
+    if (date.size() != 10 || date[4] != '-' || date[7] != '-') return false;
+    for (size_t i = 0; i < date.size(); ++i)
+        if (i != 4 && i != 7 && !isdigit(static_cast<unsigned char>(date[i]))) return false;
+    int year = stoi(date.substr(0, 4)), month = stoi(date.substr(5, 2));
+    int day = stoi(date.substr(8, 2));
+    if (year == 0 || month < 1 || month > 12) return false;
+    int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) days[1] = 29;
+    return day >= 1 && day <= days[month - 1];
+}
+
+void searchExpenses(const vector<Expense>& expenses) {
+    if (expenses.empty()) {
+        cout << "No expenses found.\n";
+        return;
+    }
+    string category;
+    cout << "Category to search: ";
+    if (!getline(cin, category)) return;
+    bool found = false;
+    for (const Expense& expense : expenses) {
+        if (expense.category == category) {
+            displayExpense(expense);
+            found = true;
+        }
+    }
+    if (!found) cout << "No expenses found for that category.\n";
+}
+
+// A failed load must never be followed by overwriting the original file.
+bool storageAvailable = true;
 void loadExpenses(vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Read expenses.txt. Missing file means an empty list; report bad data.
-    cout << "Member 3: Loading expenses is not implemented yet.\n";
+    error_code error;
+    bool exists = filesystem::exists("expenses.txt", error);
+    if (error) {
+        cerr << "Could not check expenses.txt: " << error.message() << "\n";
+        storageAvailable = false;
+        return;
+    }
+    if (!exists) return;
+    ifstream file("expenses.txt");
+    if (!file) {
+        cerr << "Could not open expenses.txt for reading.\n";
+        storageAvailable = false;
+        return;
+    }
+    vector<Expense> loaded;
+    string line;
+    while (getline(file, line)) {
+        istringstream input(line);
+        Expense expense;
+        if (!(input >> expense.id >> quoted(expense.date) >> quoted(expense.category)
+                    >> expense.amount >> quoted(expense.description)) ||
+            expense.id <= 0 || !validDate(expense.date) || !validText(expense.category) ||
+            !validText(expense.description) || !isfinite(expense.amount) || expense.amount <= 0) {
+            cerr << "Invalid data in expenses.txt; saving is disabled.\n";
+            storageAvailable = false;
+            return;
+        }
+        input >> ws;
+        if (!input.eof()) {
+            cerr << "Invalid data in expenses.txt; saving is disabled.\n";
+            storageAvailable = false;
+            return;
+        }
+        for (const Expense& previous : loaded) {
+            if (previous.id == expense.id) {
+                cerr << "Duplicate ID in expenses.txt; saving is disabled.\n";
+                storageAvailable = false;
+                return;
+            }
+        }
+        loaded.push_back(expense);
+    }
+    if (file.bad()) {
+        cerr << "Could not read expenses.txt; saving is disabled.\n";
+        storageAvailable = false;
+        return;
+    }
+    expenses = loaded;
 }
 
 bool saveExpenses(const vector<Expense>& expenses) {
-    (void)expenses;
-    // TODO: Write expenses.txt using the same format as loadExpenses().
-    // Return true only when the file was saved successfully.
-    cout << "Member 3: Saving expenses is not implemented yet.\n";
-    return false;
+    if (!storageAvailable) return false;
+    ofstream file("expenses.txt.tmp", ios::trunc);
+    if (!file) {
+        cerr << "Could not open temporary file for writing.\n";
+        return false;
+    }
+    file << setprecision(17);
+    for (const Expense& expense : expenses)
+        file << expense.id << '\t' << quoted(expense.date) << '\t'
+             << quoted(expense.category) << '\t' << expense.amount << '\t'
+             << quoted(expense.description) << '\n';
+    file.close();
+    if (file.fail()) {
+        cerr << "Could not finish writing temporary file.\n";
+        return false;
+    }
+#ifdef _WIN32
+    if (!MoveFileExA("expenses.txt.tmp", "expenses.txt", MOVEFILE_REPLACE_EXISTING)) {
+#else
+    if (rename("expenses.txt.tmp", "expenses.txt") != 0) {
+#endif
+        cerr << "Could not replace expenses.txt; original file was kept.\n";
+        return false;
+    }
+    return true;
 }
 
 Expense readExpenseDetails() {
-    // TODO: Ask for a valid date, nonempty category/description, and positive amount.
-    // Retry invalid input; handle input ending without looping forever.
-    // Add assigns the ID; update keeps the original ID. Do not use this stub yet.
-    cout << "Member 3: Reading expense details is not implemented yet.\n";
     Expense expense;
+    string input;
+    while (true) {
+        cout << "Date (YYYY-MM-DD): ";
+        if (!getline(cin, input)) return Expense{};
+        if (validDate(input)) { expense.date = input; break; }
+        cout << "Enter a real calendar date in YYYY-MM-DD format.\n";
+    }
+    while (true) {
+        cout << "Category: ";
+        if (!getline(cin, expense.category)) return Expense{};
+        if (validText(expense.category)) break;
+        cout << "Category cannot be empty.\n";
+    }
+    while (true) {
+        cout << "Amount (PHP): ";
+        if (!getline(cin, input)) return Expense{};
+        istringstream amountInput(input);
+        if (amountInput >> expense.amount) {
+            amountInput >> ws;
+            if (amountInput.eof() && isfinite(expense.amount) && expense.amount > 0) break;
+        }
+        cout << "Enter a positive amount, such as 125.50.\n";
+    }
+    while (true) {
+        cout << "Description: ";
+        if (!getline(cin, expense.description)) return Expense{};
+        if (validText(expense.description)) break;
+        cout << "Description cannot be empty.\n";
+    }
     return expense;
 }
 

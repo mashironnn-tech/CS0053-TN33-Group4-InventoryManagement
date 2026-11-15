@@ -4,7 +4,7 @@
 Our CS0053 TN33 group project is a C++ program for recording daily expenses in PHP.
 
 
-**Starter only:** The menu works. Functions marked `TODO` still need to be implemented.
+Records are saved locally in `expenses.txt` and loaded when the program starts.
 
 
 ## Features
@@ -14,11 +14,10 @@ Our CS0053 TN33 group project is a C++ program for recording daily expenses in P
 2. **View** - Show all expenses.
 3. **Search** - Find expenses by category.
 4. **Update** - Edit an expense using its ID.
-5. **Delete (later)** - Remove an expense using its ID.
+5. **Delete** - Remove an expense using its ID.
 
 
-Start with the first four. All five must work before submission.
-Save records in `expenses.txt` and load them when the program starts.
+Search matches the category exactly. Dates use YYYY-MM-DD and amounts must be positive.
 
 
 ## Who Does What?
@@ -48,7 +47,7 @@ All features use the same `expenses` list.
 ## Program Flow
 
 
-This shows the intended flow after the TODO functions are completed.
+The program follows this flow:
 
 
 ```mermaid
@@ -67,15 +66,15 @@ flowchart TD
 ```
 
 
-## Run the Starter
+## Build and run
 
 
-Use VS Code and G++ with C++17 support. Put `main.cpp` inside `src/`.
+Use VS Code and G++ with C++17 support.
 From the project folder, compile:
 
 
 ```bash
-g++ -std=c++17 -Wall -Wextra src/main.cpp -o expense_tracker
+g++ -std=c++17 -Wall -Wextra main.cpp -o expense_tracker
 ```
 
 
@@ -85,14 +84,22 @@ Run on macOS/Linux: `./expense_tracker`
 On Windows PowerShell, compile with `-o expense_tracker.exe`, then run `.\expense_tracker.exe`.
 
 
-Example from the current starter:
+Example:
 
 
 ```text
 Choose an option: 1
-Member 1: Add expense is not implemented yet.
+Date (YYYY-MM-DD): 2024-02-29
+Category: Food
+Amount (PHP): 125.50
+Description: Lunch
+Expense added successfully. ID: 1
 ```
 
+
+Run the automated checks with `python3 tests/check.py ./expense_tracker` after compiling. The checks use temporary data.
+
+If the saved file is unreadable or invalid, saving is disabled to protect it; resolve the file problem before restarting.
 
 ## Team Workflow
 

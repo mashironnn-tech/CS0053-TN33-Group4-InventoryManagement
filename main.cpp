@@ -196,20 +196,42 @@ bool validDate(const string& date) {
 
 void searchExpenses(const vector<Expense>& expenses) {
     if (expenses.empty()) {
-        cout << "No expenses found.\n";
+        cout << "\n[INFO] No expense records found.\n";
+        pauseScreen();
         return;
     }
+
     string category;
-    cout << "Category to search: ";
+    cout << "\nEnter category to search: ";
     if (!getline(cin, category)) return;
+
     bool found = false;
+    double subtotal = 0.0;
+    int count = 0;
+
     for (const Expense& expense : expenses) {
         if (expense.category == category) {
+            if (!found) {
+                printTableHeader();
+                found = true;
+            }
             displayExpense(expense);
-            found = true;
+            subtotal += expense.amount;
+            count++;
         }
     }
-    if (!found) cout << "No expenses found for that category.\n";
+
+    if (!found) {
+        cout << "\n[INFO] No expenses found under category \"" << category << "\".\n";
+    } else {
+        printDivider('-', 78);
+        cout << right << setw(35) << "CATEGORY SUBTOTAL: "
+             << setw(14) << fixed << setprecision(2) << subtotal << " PHP"
+             << " (" << count << " item" << (count == 1 ? "" : "s") << ")\n";
+        printDivider('=', 78);
+    }
+
+    pauseScreen();
 }
 
 // A failed load must never be followed by overwriting the original file.

@@ -56,10 +56,32 @@ int main() {
     return 0;
 }
 
+// Helper for visual separation and pausing before returning to menu
+void printDivider(char ch = '-', int width = 76) {
+    cout << string(width, ch) << "\n";
+}
+
+void pauseScreen() {
+    cout << "\nPress Enter to return to the menu...";
+    string dummy;
+    getline(cin, dummy);
+}
+
+// MEMBER 1: Menu UI
 string showMenu() {
-    cout << "\n=== Personal Expense Tracker ===\n"
-         << "1. Add expense\n2. View expenses\n3. Search expenses\n"
-         << "4. Update expense\n5. Delete expense\n0. Exit\nChoose an option: ";
+    cout << "\n";
+    printDivider('=', 44);
+    cout << "         PERSONAL EXPENSE TRACKER\n";
+    printDivider('=', 44);
+    cout << "  [1] Add Expense\n"
+         << "  [2] View All Expenses\n"
+         << "  [3] Search Expenses by Category\n"
+         << "  [4] Update an Expense\n"
+         << "  [5] Delete an Expense\n"
+         << "  [0] Exit\n";
+    printDivider('-', 44);
+    cout << "Choose an option: ";
+
     string choice;
     if (!getline(cin, choice)) return "0";
     return choice;
@@ -105,25 +127,54 @@ bool addExpense(vector<Expense>& expenses) {
     return true;
 }
 
-// MEMBER 2: View and display expenses.
-void viewExpenses(const vector<Expense>& expenses) {
-    if (expenses.empty()) {
-        cout << "\nNo expenses found.\n";
-        return;
-    }
-
-    cout << "\n--- All Expense Records ---\n";
-    for (const auto& expense : expenses) {
-        displayExpense(expense);
-    }
+// MEMBER 2: Table Header, Row Display, and Summary of expenses.
+void printTableHeader() {
+    cout << "\n";
+    printDivider('=', 78);
+    cout << left
+         << setw(6)  << "ID"
+         << setw(13) << "DATE"
+         << setw(16) << "CATEGORY"
+         << right << setw(14) << "AMOUNT (PHP)"
+         << "   " << left << "DESCRIPTION\n";
+    printDivider('-', 78);
 }
 
 void displayExpense(const Expense& expense) {
-    cout << "ID: " << expense.id << " | "
-         << "Date: " << expense.date << " | "
-         << "Category: " << expense.category << " | "
-         << "Amount: PHP " << fixed << setprecision(2) << expense.amount << " | "
-         << "Description: " << expense.description << "\n";
+    // Truncate long descriptions cleanly so table rows never wrap awkwardly
+    string desc = expense.description;
+    if (desc.length() > 26) {
+        desc = desc.substr(0, 23) + "...";
+    }
+
+    cout << left
+         << setw(6)  << expense.id
+         << setw(13) << expense.date
+         << setw(16) << expense.category.substr(0, 14)
+         << right << setw(14) << fixed << setprecision(2) << expense.amount
+         << "   " << left << desc << "\n";
+}
+
+void viewExpenses(const vector<Expense>& expenses) {
+    if (expenses.empty()) {
+        cout << "\n[INFO] No expense records found.\n";
+        pauseScreen();
+        return;
+    }
+
+    printTableHeader();
+    double total = 0.0;
+    for (const auto& expense : expenses) {
+        displayExpense(expense);
+        total += expense.amount;
+    }
+    printDivider('-', 78);
+    cout << right << setw(35) << "TOTAL EXPENSES: "
+         << setw(14) << fixed << setprecision(2) << total << " PHP"
+         << " (" << expenses.size() << " item" << (expenses.size() == 1 ? "" : "s") << ")\n";
+    printDivider('=', 78);
+
+    pauseScreen();
 }
 
 // MEMBER 3: Search, storage, and input validation.
@@ -145,20 +196,42 @@ bool validDate(const string& date) {
 
 void searchExpenses(const vector<Expense>& expenses) {
     if (expenses.empty()) {
-        cout << "No expenses found.\n";
+        cout << "\n[INFO] No expense records found.\n";
+        pauseScreen();
         return;
     }
+
     string category;
-    cout << "Category to search: ";
+    cout << "\nEnter category to search: ";
     if (!getline(cin, category)) return;
+
     bool found = false;
+    double subtotal = 0.0;
+    int count = 0;
+
     for (const Expense& expense : expenses) {
         if (expense.category == category) {
+            if (!found) {
+                printTableHeader();
+                found = true;
+            }
             displayExpense(expense);
-            found = true;
+            subtotal += expense.amount;
+            count++;
         }
     }
-    if (!found) cout << "No expenses found for that category.\n";
+
+    if (!found) {
+        cout << "\n[INFO] No expenses found under category \"" << category << "\".\n";
+    } else {
+        printDivider('-', 78);
+        cout << right << setw(35) << "CATEGORY SUBTOTAL: "
+             << setw(14) << fixed << setprecision(2) << subtotal << " PHP"
+             << " (" << count << " item" << (count == 1 ? "" : "s") << ")\n";
+        printDivider('=', 78);
+    }
+
+    pauseScreen();
 }
 
 // A failed load must never be followed by overwriting the original file.

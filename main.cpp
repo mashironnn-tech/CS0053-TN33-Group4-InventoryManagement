@@ -352,43 +352,54 @@ Expense readExpenseDetails() {
 // MEMBER 4: Update and later delete expenses.
 bool updateExpense(vector<Expense>& expenses) {
     if (expenses.empty()) {
-        cout << "\nNo expenses available to update.\n";
+        cout << "\n[INFO] No expenses available to update.\n";
+        pauseScreen();
         return false;
     }
 
-    cout << "Enter the ID of the expense to update: ";
-    int targetId;
-    if (!(cin >> targetId)) {
-        cin.clear();
-        cin.ignore(10000, '\n'); // Clear invalid input
-        cout << "Invalid ID format.\n";
+    cout << "\nEnter the ID of the expense to update: ";
+    string input;
+    if (!getline(cin, input)) return false;
+
+    istringstream idStream(input);
+    int targetId = 0;
+    if (!(idStream >> targetId) || !(idStream >> ws).eof() || targetId <= 0) {
+        cout << "Invalid ID format. Please enter a positive number.\n";
+        pauseScreen();
         return false;
     }
-    cin.ignore(10000, '\n'); // Clear the newline character from the buffer
 
     for (auto& expense : expenses) {
         if (expense.id == targetId) {
-            cout << "Found expense ID " << targetId << ". Enter new details:\n";
-            
-            // Reuse Member 3's function to get validated input
+            cout << "\nCurrent Expense Record:";
+            printTableHeader();
+            displayExpense(expense);
+            printDivider('-', 78);
+
+            cout << "Enter new details:\n";
             Expense updatedData = readExpenseDetails();
-            
-            // Basic check to see if readExpenseDetails was cancelled/failed
-            if (updatedData.date.empty() || updatedData.category.empty()) { 
+
+            if (updatedData.date.empty() ||
+                updatedData.category.empty() ||
+                updatedData.description.empty() ||
+                !isfinite(updatedData.amount) ||
+                updatedData.amount <= 0.0) {
                 cout << "Update cancelled: valid details are required.\n";
+                pauseScreen();
                 return false;
             }
 
-            // Keep the original ID, apply the new details
             updatedData.id = expense.id;
             expense = updatedData;
-            
+
             cout << "Expense updated successfully.\n";
+            pauseScreen();
             return true;
         }
     }
 
     cout << "Update failed: Expense with ID " << targetId << " not found.\n";
+    pauseScreen();
     return false;
 }
 

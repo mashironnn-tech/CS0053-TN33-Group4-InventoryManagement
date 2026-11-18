@@ -394,28 +394,48 @@ bool updateExpense(vector<Expense>& expenses) {
 
 bool deleteExpense(vector<Expense>& expenses) {
     if (expenses.empty()) {
-        cout << "\nNo expenses available to delete.\n";
+        cout << "\n[INFO] No expenses available to delete.\n";
+        pauseScreen();
         return false;
     }
 
-    cout << "Enter the ID of the expense to delete: ";
-    int targetId;
-    if (!(cin >> targetId)) {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid ID format.\n";
+    cout << "\nEnter the ID of the expense to delete: ";
+    string input;
+    if (!getline(cin, input)) return false;
+
+    istringstream idStream(input);
+    int targetId = 0;
+    if (!(idStream >> targetId) || !(idStream >> ws).eof() || targetId <= 0) {
+        cout << "Invalid ID format. Please enter a positive number.\n";
+        pauseScreen();
         return false;
     }
-    cin.ignore(10000, '\n');
 
     for (auto it = expenses.begin(); it != expenses.end(); ++it) {
         if (it->id == targetId) {
-            expenses.erase(it);
-            cout << "Expense ID " << targetId << " deleted successfully.\n";
-            return true;
+            cout << "\nExpense to Delete:";
+            printTableHeader();
+            displayExpense(*it);
+            printDivider('-', 78);
+
+            cout << "Are you sure you want to delete this expense? (y/n): ";
+            string confirm;
+            if (!getline(cin, confirm)) return false;
+
+            if (confirm == "y" || confirm == "Y") {
+                expenses.erase(it);
+                cout << "Expense ID " << targetId << " deleted successfully.\n";
+                pauseScreen();
+                return true;
+            } else {
+                cout << "Deletion cancelled.\n";
+                pauseScreen();
+                return false;
+            }
         }
     }
 
     cout << "Delete failed: Expense with ID " << targetId << " not found.\n";
+    pauseScreen();
     return false;
 }
